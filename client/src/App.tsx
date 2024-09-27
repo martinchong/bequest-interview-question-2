@@ -2,8 +2,11 @@ import React, { useEffect, useState } from "react";
 
 const API_URL = "http://localhost:8080";
 
+// Using key assuming we have HTTPS and dont need to worry about data getting intercepted
+const key = process.env.REACT_APP_USER_SECRET_CODE;
+
 function App() {
-  const [data, setData] = useState<string>();
+  const [data, setData] = useState<string>('');
 
   useEffect(() => {
     getData();
@@ -11,14 +14,14 @@ function App() {
 
   const getData = async () => {
     const response = await fetch(API_URL);
-    const { data } = await response.json();
-    setData(data);
+    const result = await response.json();
+    setData(result);
   };
 
   const updateData = async () => {
     await fetch(API_URL, {
       method: "POST",
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ data, key }),
       headers: {
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -29,7 +32,17 @@ function App() {
   };
 
   const verifyData = async () => {
-    throw new Error("Not implemented");
+    const response = await fetch(`${API_URL}/check`, {
+      method: "POST",
+      body: JSON.stringify({ data, key }),
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+    });
+    const result = await response.json();
+    // Update data
+    setData(result);
   };
 
   return (
